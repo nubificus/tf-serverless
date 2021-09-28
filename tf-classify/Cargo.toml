@@ -1,0 +1,13 @@
+[package]
+name = "tf-classify"
+version = "0.1.0"
+authors = ["Babis Chalios <mail@bchalios.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tf-serve = { path = "../tf-serve" }
+structopt = "0.3"
+env_logger = "0.9"
+log = "0.4"

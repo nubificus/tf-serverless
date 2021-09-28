@@ -1,0 +1,11 @@
+# Test data
+data
+
+# Cargo related
+**target
+
+# Serverless Framework related
+.serverless
+package-lock.json
+package.json
+node_modules
