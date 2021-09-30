@@ -1,20 +1,15 @@
-use lambda_runtime::{handler_fn, Context};
-use serde::{Deserialize, Serialize};
+use lambda_http::{
+    handler,
+    lambda_runtime::{self, Context, Error},
+    IntoResponse, Request, Response,
+};
+
+use log::debug;
 use std::path::PathBuf;
 use tf_serve::ImageClassifier;
 
-type Error = Box<dyn std::error::Error + Sync + Send + 'static>;
-
-#[derive(Deserialize)]
-struct Request {
-    url: String,
-}
-
-#[derive(Serialize)]
-struct Response {
-    tag: String,
-    probability: f32,
-}
+extern crate base64;
+extern crate serde_json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -24,19 +19,43 @@ async fn main() -> Result<(), Error> {
     let tags_path = PathBuf::from("/mnt/libraries/resnet50/ImageNetLabels.txt");
     let classifier = ImageClassifier::new(&export_dir, &tags_path)?;
 
+    debug!("Loaded model in memory");
+
     let classifier_ref = &classifier;
 
-    let func = handler_fn(move |event: Request, ctx: Context| async move {
-        handler(event, ctx, classifier_ref)
-    });
+    let handler_closure = move |event: Request, ctx: Context| async move {
+        handle_request(event, ctx, classifier_ref)
+    };
 
-    lambda_runtime::run(func).await?;
+    debug!("Dispatching handler");
+    lambda_runtime::run(handler(handler_closure)).await?;
 
     Ok(())
 }
 
-fn handler(event: Request, _: Context, classifier: &ImageClassifier) -> Result<Response, Error> {
-    let (tag, probability) = classifier.classify_from_url(&event.url)?;
+fn handle_request(
+    event: Request,
+    _ctx: Context,
+    classifier: &ImageClassifier,
+) -> Result<impl IntoResponse, Error> {
+    debug!("Inside handler");
+    debug!("Received request: {:#?}", event);
 
-    Ok(Response { tag, probability })
+    let mut t = tf_serve::Timer::new_start("Handling request");
+
+    let raw: &[u8] = event.body();
+
+    let response = match classifier.classify_from_raw(&raw) {
+        Err(err) => Response::builder()
+            .body(format!("Classification failure: '{}'", err))
+            .expect("Failed to render response"),
+        Ok(classification) => Response::builder()
+            .status(200)
+            .body(serde_json::to_string(&classification)?)
+            .expect("Failed to render response"),
+    };
+
+    t.stop();
+
+    Ok(response)
 }

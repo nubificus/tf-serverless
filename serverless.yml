@@ -17,20 +17,21 @@ provider:
   name: aws
   runtime: rust
   memorySize: 1024
-  timeout: 60
   region: us-east-1
+  lambdaHashingVersion: "20201221"
 
 package:
   individually: true
 
 plugins:
   - serverless-rust
+
 functions:
-  tf-classify-lambda:
+  tf-classify:
     # handler value syntax is `{cargo-package-name}.{bin-name}`
     # or `{cargo-package-name}` for short when you are building a
     # default bin for a given package.
-    handler: tf-classify-lambda
+    handler: handler
 
     fileSystemConfig:
       localMountPath: /mnt/libraries
@@ -47,8 +48,13 @@ functions:
         - subnet-047c4e0cf29aeaafc
 
     environment:
-      RUST_LOG: info
+      RUST_LOG: debug
       LD_LIBRARY_PATH: /mnt/libraries
+
+    events:
+      - httpApi:
+          path: '/v1/classify'
+          method: '*'
 
 custom:
   rust:

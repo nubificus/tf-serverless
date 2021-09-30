@@ -719,6 +719,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62aca2aba2d62b4a7f5b33f3712cb1b0692779a56fb510499d5c0aa594daeaf3"
 
 [[package]]
+name = "handler"
+version = "0.1.0"
+dependencies = [
+ "base64 0.13.0",
+ "env_logger",
+ "lambda_http",
+ "log",
+ "serde",
+ "serde_json",
+ "tf-serve",
+ "tokio 1.12.0",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -962,6 +976,19 @@ checksum = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
+]
+
+[[package]]
+name = "lambda_http"
+version = "0.4.1"
+source = "git+https://github.com/awslabs/aws-lambda-rust-runtime/?branch=master#3871cb4c8fa0319eb157c15eb9e443b1b7526dd8"
+dependencies = [
+ "base64 0.13.0",
+ "http 0.2.5",
+ "lambda_runtime",
+ "serde",
+ "serde_json",
+ "serde_urlencoded 0.7.0",
 ]
 
 [[package]]
@@ -1708,7 +1735,7 @@ dependencies = [
  "native-tls",
  "serde",
  "serde_json",
- "serde_urlencoded",
+ "serde_urlencoded 0.5.5",
  "time",
  "tokio 0.1.22",
  "tokio-executor",
@@ -1854,6 +1881,18 @@ dependencies = [
  "itoa",
  "serde",
  "url 1.7.2",
+]
+
+[[package]]
+name = "serde_urlencoded"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edfa57a7f8d9c1d260a549e7224100f6c43d43f9103e06dd8b4095a9b2b43ce9"
+dependencies = [
+ "form_urlencoded",
+ "itoa",
+ "ryu",
+ "serde",
 ]
 
 [[package]]
@@ -2055,21 +2094,9 @@ version = "0.1.0"
 dependencies = [
  "env_logger",
  "log",
+ "serde_json",
  "structopt",
  "tf-serve",
-]
-
-[[package]]
-name = "tf-classify-lambda"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "lambda_runtime",
- "log",
- "serde",
- "serde_json",
- "tf-serve",
- "tokio 1.12.0",
 ]
 
 [[package]]
@@ -2081,6 +2108,8 @@ dependencies = [
  "image",
  "log",
  "reqwest",
+ "serde",
+ "serde_json",
  "tensorflow",
 ]
 

@@ -1,3 +1,7 @@
 [workspace]
 
-members = ["tf-serve", "tf-classify-lambda", "tf-classify"]
+members = [
+	"tf-serve",
+	"tf-classify-lambda",
+	"tf-classify",
+]
