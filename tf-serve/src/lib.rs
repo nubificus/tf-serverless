@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use chrono::{DateTime, Duration, Utc};
 use image::DynamicImage;
 use log::{debug, info};
+use serde::Serialize;
 use tensorflow::{
     Code, Graph, SavedModelBundle, Session, SessionOptions, SessionRunArgs, Status, Tensor,
 };
@@ -52,6 +53,14 @@ impl Timer {
             }
         }
     }
+
+    /// Get duration in milliseconds
+    fn duration(&self) -> i64 {
+        match self.duration {
+            None => 0,
+            Some(dur) => dur.num_milliseconds(),
+        }
+    }
 }
 
 pub struct ImageClassifier {
@@ -63,6 +72,27 @@ pub struct ImageClassifier {
 
     /// Tags translation file
     tags: PathBuf,
+}
+
+#[derive(Default, Serialize)]
+pub struct Classification {
+    /// Classification tag of the image
+    tag: String,
+
+    /// Classification probability
+    probability: f32,
+
+    /// Time spent fetching image from URL
+    time_url_fetch: i64,
+
+    /// Time spent loading image in memory
+    time_image_load: i64,
+
+    /// Time resizing image
+    time_image_resize: i64,
+
+    /// Time spent on running session
+    time_session_run: i64,
 }
 
 impl ImageClassifier {
@@ -83,7 +113,26 @@ impl ImageClassifier {
         })
     }
 
-    pub fn run(&self, image: &[f32]) -> tensorflow::Result<Tensor<f32>> {
+    fn get_tag(&self, tensor: Tensor<f32>) -> tensorflow::Result<Classification> {
+        let file = File::open(self.tags.clone())
+            .map_err(|_| Status::new_set_lossy(Code::NotFound, "Could not open tags file"))?;
+
+        let mut tags = BufReader::new(file).lines();
+
+        let best = tensor
+            .iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+            .unwrap();
+
+        Ok(Classification {
+            tag: tags.nth(best.0).unwrap().unwrap(),
+            probability: *best.1,
+            ..Default::default()
+        })
+    }
+
+    pub fn run(&self, image: &[f32]) -> tensorflow::Result<Classification> {
         let mut t = Timer::new_start("Running session");
 
         let input = Tensor::new(&[1, 224, 224, 3])
@@ -108,29 +157,17 @@ impl ImageClassifier {
         );
 
         self.session.run(&mut args)?;
-        let output = args.fetch(result);
+        let output = args.fetch(result)?;
 
         t.stop();
 
-        output
+        let mut classification = self.get_tag(output)?;
+        classification.time_session_run = t.duration();
+
+        Ok(classification)
     }
 
-    fn get_tag(&self, tensor: Tensor<f32>) -> tensorflow::Result<(String, f32)> {
-        let file = File::open(self.tags.clone())
-            .map_err(|_| Status::new_set_lossy(Code::NotFound, "Could not open tags file"))?;
-
-        let mut tags = BufReader::new(file).lines();
-
-        let best = tensor
-            .iter()
-            .enumerate()
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
-            .unwrap();
-
-        Ok((tags.nth(best.0).unwrap().unwrap(), *best.1))
-    }
-
-    pub fn classify(&self, image: &DynamicImage) -> tensorflow::Result<(String, f32)> {
+    pub fn classify(&self, image: &DynamicImage) -> tensorflow::Result<Classification> {
         let mut t = Timer::new_start("Resizing image");
 
         let rgb = image.to_rgb();
@@ -146,11 +183,13 @@ impl ImageClassifier {
 
         t.stop();
 
-        let result = self.run(&raw_image)?;
-        self.get_tag(result)
+        let mut classification = self.run(&raw_image)?;
+        classification.time_image_resize = t.duration();
+
+        Ok(classification)
     }
 
-    pub fn classify_from_raw(&self, data: &[u8]) -> tensorflow::Result<(String, f32)> {
+    pub fn classify_from_raw(&self, data: &[u8]) -> tensorflow::Result<Classification> {
         let mut t = Timer::new_start("Load image from memory");
 
         let image = image::load_from_memory(&data).map_err(|_| {
@@ -159,10 +198,13 @@ impl ImageClassifier {
 
         t.stop();
 
-        self.classify(&image)
+        let mut classification = self.classify(&image)?;
+        classification.time_image_load = t.duration();
+
+        Ok(classification)
     }
 
-    pub fn classify_from_url(&self, url: &str) -> tensorflow::Result<(String, f32)> {
+    pub fn classify_from_url(&self, url: &str) -> tensorflow::Result<Classification> {
         let mut t = Timer::new_start(&format!("Fetching image from {}", url));
 
         let mut resp =
@@ -174,7 +216,10 @@ impl ImageClassifier {
 
         t.stop();
 
-        self.classify_from_raw(&buf)
+        let mut classification = self.classify_from_raw(&buf)?;
+        classification.time_url_fetch = t.duration();
+
+        Ok(classification)
     }
 }
 
