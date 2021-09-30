@@ -11,3 +11,4 @@ tf-serve = { path = "../tf-serve" }
 structopt = "0.3"
 env_logger = "0.9"
 log = "0.4"
+serde_json = "1.0"

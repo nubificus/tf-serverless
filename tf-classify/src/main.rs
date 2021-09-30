@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 use tf_serve::ImageClassifier;
 
+extern crate serde_json;
+
 use log::info;
 
 #[derive(StructOpt, Debug)]
@@ -30,9 +32,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let classifier = ImageClassifier::new(&export_dir, &tags_path)?;
 
-    let (tag, prob) = classifier.classify_from_url(&args.image_url)?;
+    let classification = classifier.classify_from_url(&args.image_url)?;
 
-    info!("{} probability:{}", tag, prob);
+    info!("{}", serde_json::to_string(&classification).unwrap());
 
     Ok(())
 }
