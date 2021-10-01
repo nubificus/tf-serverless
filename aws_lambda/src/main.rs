@@ -43,9 +43,9 @@ fn handle_request(
 
     let mut t = tf_serve::Timer::new_start("Handling request");
 
-    let raw: &[u8] = event.body();
+    let body = event.body();
 
-    let response = match classifier.classify_from_raw(&raw) {
+    let response = match classifier.classify_from_raw(body) {
         Err(err) => Response::builder()
             .body(format!("Classification failure: '{}'", err))
             .expect("Failed to render response"),
