@@ -1,0 +1,10 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: https://openfaas.nbfc.io
+functions:
+  tf-classify:
+    lang: rust-http
+    handler: ./tf-classify
+    image: nubificus/tf-classify:latest
+

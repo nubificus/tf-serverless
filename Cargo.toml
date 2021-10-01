@@ -2,6 +2,7 @@
 
 members = [
 	"tf-serve",
-	"tf-classify-lambda",
+	"aws_lambda",
 	"tf-classify",
+	"openfaas/tf-classify"
 ]
