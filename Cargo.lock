@@ -738,6 +738,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62aca2aba2d62b4a7f5b33f3712cb1b0692779a56fb510499d5c0aa594daeaf3"
 
 [[package]]
+name = "handler_openfaas"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "hyper 0.14.13",
+ "serde",
+ "serde_json",
+ "tf-serve",
+ "tokio 1.12.0",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -994,7 +1006,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "lambda"
+name = "lambda_handler"
 version = "0.1.0"
 dependencies = [
  "base64 0.13.0",
@@ -1003,7 +1015,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "tf-serve 0.1.0",
+ "tf-serve",
  "tokio 1.12.0",
 ]
 
@@ -1095,18 +1107,6 @@ name = "lzw"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d947cbb889ed21c2a84be6ffbaebf5b4e0f4340638cba0444907e38b56be084"
-
-[[package]]
-name = "main"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "hyper 0.14.13",
- "serde",
- "serde_json",
- "tf-serve 0.1.0 (git+https://github.com/nubificus/tf-serverless)",
- "tokio 1.12.0",
-]
 
 [[package]]
 name = "matches"
@@ -2186,27 +2186,12 @@ dependencies = [
  "log",
  "serde_json",
  "structopt",
- "tf-serve 0.1.0",
+ "tf-serve",
 ]
 
 [[package]]
 name = "tf-serve"
 version = "0.1.0"
-dependencies = [
- "base64 0.13.0",
- "chrono",
- "image",
- "log",
- "reqwest",
- "serde",
- "serde_json",
- "tensorflow",
-]
-
-[[package]]
-name = "tf-serve"
-version = "0.1.0"
-source = "git+https://github.com/nubificus/tf-serverless#bb9cbe9e2e6e13d8c55e6294207239e9fb65412e"
 dependencies = [
  "base64 0.13.0",
  "chrono",

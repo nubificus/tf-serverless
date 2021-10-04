@@ -7,4 +7,5 @@ functions:
     lang: rust-http
     handler: ./tf-classify
     image: nubificus/tf-classify:latest
-
+    build_args:
+      HANDLER_PACKAGE: handler_openfaas

@@ -7,7 +7,9 @@ WORKDIR /home/rust
 # Copy all the sources
 COPY function ./function
 
-RUN cd function && cargo build --release
+ARG HANDLER_PACKAGE
+
+RUN cd function && cargo build --release --bin $HANDLER_PACKAGE
 
 FROM nubificus/tensorflow:v2.3.0-gpu as runner
 ARG HANDLER_PACKAGE
@@ -22,7 +24,7 @@ ENV USER=app
 COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
 
-COPY --from=builder /home/rust/function/target/release/main /usr/bin/function
+COPY --from=builder /home/rust/function/target/release/$HANDLER_PACKAGE /usr/bin/function
 RUN chmod +x /usr/bin/function
 
 # Fetch TensorFlow models

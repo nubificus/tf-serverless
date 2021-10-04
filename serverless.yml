@@ -31,7 +31,7 @@ functions:
     # handler value syntax is `{cargo-package-name}.{bin-name}`
     # or `{cargo-package-name}` for short when you are building a
     # default bin for a given package.
-    handler: handler
+    handler: lambda_handler
 
     fileSystemConfig:
       localMountPath: /mnt/libraries
