@@ -1,0 +1,24 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: https://openfaas.nbfc.io
+
+functions:
+  tf-classify-vaccel:
+    lang: rust-http
+    handler: ./tf-classify
+    image: nubificus/tf-classify-vaccel:latest
+    
+    build_args:
+      HANDLER_PACKAGE: handler_openfaas
+
+    annotations:
+      com.openfaas.profile: gpu-enabled
+
+    labels:
+      com.openfaas.scale.min: 1
+      com.openfaas.scale.max: 100
+      cmp.openfaas.scale.factor: 80
+
+    environment:
+      RUST_LOG: debug

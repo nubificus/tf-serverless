@@ -25,7 +25,6 @@ package:
 
 plugins:
   - serverless-rust
-
 functions:
   tf-classify:
     # handler value syntax is `{cargo-package-name}.{bin-name}`
@@ -59,5 +58,5 @@ functions:
 custom:
   rust:
     dockerImage: 'softprops/lambda-rust'
-    dockerTag: 'provided-rust-1.51.0'
+    dockerTag: '0.4.0-rust-1.51.0'
     dockFlags: '-v $(pwd)/../tf-serve:/tf-serve'
